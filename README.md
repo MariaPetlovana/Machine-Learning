@@ -6,14 +6,15 @@ The main goal of this project is to determine activity periods during the day an
 Description of data files is here:
 https://redmine.sozolab.jp/projects/nursing
 
-The directories/files structure is the next:
-trunk/
-	main.py
-	datasets/
-		acts.csv
-		Labelled/
-			labels/
-			sensors/
-		Unlabelled/
-			duties.csv
-			sensors/
+The directories/files structure is the next: 
+
+    trunk/
+        main.py 
+	    datasets/
+		    acts.csv
+		    Labelled/
+			    labels/
+			    sensors/
+		    Unlabelled/
+			    duties.csv
+			    sensors/
