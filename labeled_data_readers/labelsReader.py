@@ -1,40 +1,36 @@
-from labeled_data_model.actionsReader import Action
+from labeled_data_readers.actionsReader import*
+from labeled_data_readers.reader import Reader
 
 import os.path
 import codecs
 import datetime
 
 class Label(object):
-    def __init__(self, nurse_id, date, action_id, start_time, end_time):
+    def __init__(self, action_id, start_datetime, end_datetime):
+        self.action_id = action_id
+        self.start_datetime = start_datetime
+        self.end_datetime = end_datetime
+
+class LabelWrapper(object):
+    def __init__(self, nurse_id, date, label):
         self.nurse_id = nurse_id
         self.date = date
-        self.action_id = action_id
-        self.start_time = start_time
-        self.end_time = end_time
+        self.label = label
 
-class LabelsManager(object):
-    def __init__(self, labels_dir, actions):
-        self.labels_dir = labels_dir
-        self.actions = actions
+class LabelsReader(Reader):
+    def __init__(self, directory):
+        Reader.__init__(self, directory)
         self.labels = []
 
-    def loadLabels(self):
-        labels_files = []
+        actions_reader = ActionsReader(r'./datasets/Actions/')
+        actions_reader.load()
+        self.actions = actions_reader.actions
 
-        for root, dirs, files in os.walk(self.labels_dir):
-            for f in files:
-                fullpath = os.path.join(root, f)
-                if os.path.splitext(fullpath)[1] == '.csv':
-                    labels_files.append(fullpath)
-
-        for f in labels_files:
-            self.labels.extend(self.__loadLabelsFromFile(f))
-
-    def __loadLabelsFromFile(self, filename):
-        nurse_id, date = self.__splitFileNameByPattern(filename)
+    def _loadFromFile(self, file_path):
+        nurse_id, date = self._splitFileNameByPattern(file_path)
 
         rows=[]
-        f = codecs.open(filename, 'r', "utf-8")
+        f = codecs.open(file_path, 'r', "utf-8")
         is_first_line = False
         for line in f:
             if not is_first_line:
@@ -57,21 +53,21 @@ class LabelsManager(object):
                 if does_index_exist is False:
                     self.actions.append(Action(index, data[1]))
             else:
-                index = data[0]
+                index = int(data[0])
 
-            start_time = datetime.datetime.strptime(data[2], "%Y-%m-%d %H:%M:%S")
-            end_time = datetime.datetime.strptime(data[3], "%Y-%m-%d %H:%M:%S")
+            start_datetime = datetime.datetime.strptime(data[2], "%Y-%m-%d %H:%M:%S")
+            end_datetime = datetime.datetime.strptime(data[3], "%Y-%m-%d %H:%M:%S")
 
-            rows.append(Label(nurse_id, date, index, start_time, end_time))
+            rows.append(LabelWrapper(nurse_id, date, Label(index, start_datetime, end_datetime)))
 
         f.close()
-        return rows
+        self.labels.extend(rows)
 
-    # in labeled data file name pattern is the next:
+    # labels file name pattern is the next:
     # N0xx_YYYYMMDD
     # xx - nurse_id
     # YYYYMMDD - date
-    def __splitFileNameByPattern(self, path):
+    def _splitFileNameByPattern(self, path):
         file_name_with_ext = os.path.basename(path)
         file_name = os.path.splitext(file_name_with_ext)[0]
         nurse_id_and_date = file_name.split('_')

@@ -1,9 +1,11 @@
-from labeled_data_model.actionsReader import ActionsReader
-from labeled_data_model.labelsManager import LabelsManager
+from labeled_data_readers.labelsReader import LabelsReader
+from labeled_data_readers.sensorsObservationsReader import SensorsObservationsReader
 
 if __name__ == "__main__":
-    actions_reader = ActionsReader()
-
     labels_directory = r'./datasets/Labelled/labels'
-    labels_manager = LabelsManager(labels_directory, actions_reader.loadActions(r'./datasets/acts.csv'))
-    labels_manager.loadLabels()
+    labels_reader = LabelsReader(labels_directory)
+    labels_reader.load()
+
+    sensors_observations_directory = r'./datasets/Labelled/sensors'
+    sensors_observations_reader = SensorsObservationsReader(sensors_observations_directory)
+    sensors_observations_reader.load()
