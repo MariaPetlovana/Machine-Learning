@@ -81,7 +81,7 @@ class SensorsObservationsReader(Reader):
     # xx - nurse_id
     # YYYYMMDD - date
     # HHMMSS - time
-    def _splitFileNameByPattern(self, path):
+    def splitFileNameByPattern(self, path):
         file_name_with_ext = os.path.basename(path)
         file_name = os.path.splitext(file_name_with_ext)[0]
         splitted_filename = file_name.split('_')
@@ -89,5 +89,7 @@ class SensorsObservationsReader(Reader):
         date = datetime.datetime.strptime(splitted_filename[1], "%Y%m%d")
         time_start_and_end = splitted_filename[2].split('-')
         start_time = datetime.datetime.strptime(time_start_and_end[0], "%H%M%S")
+        start_time = start_time.replace(year = date.year, month = date.month, day = date.day)
         end_time = datetime.datetime.strptime(time_start_and_end[1], "%H%M%S")
+        end_time = end_time.replace(year = date.year, month = date.month, day = date.day)
         return nurse_id, date, start_time, end_time

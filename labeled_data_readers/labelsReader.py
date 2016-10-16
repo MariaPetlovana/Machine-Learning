@@ -26,6 +26,25 @@ class LabelsReader(Reader):
         actions_reader.load()
         self.actions = actions_reader.actions
 
+    def addActionToActionsList(self, action_id, action_name):
+        # if action_id is not empty, it is already present in the actions list -> do nothing
+        if action_id:
+            return int(action_id)
+
+        index = len(self.actions) + 1
+        does_index_exist = False
+        for i in range(len(self.actions)):
+            # comparison does not pass
+            if action_name == self.actions[i].action_string:
+                index = i + 1
+                does_index_exist = True
+                break
+
+        if does_index_exist is False:
+            self.actions.append(Action(index, action_name))
+
+        return index
+
     def _loadFromFile(self, file_path):
         nurse_id, date = self._splitFileNameByPattern(file_path)
 
@@ -38,23 +57,9 @@ class LabelsReader(Reader):
                 continue
 
             line = line.rstrip()
-            data = line.split(',');
-            index = len(self.actions) + 1
+            data = line.split(',')
 
-            if not data[0]:
-                does_index_exist = False
-                for i in range(len(self.actions)):
-                    # comparison does not pass
-                    if data[1] == self.actions[i].action_string:
-                        index = i + 1
-                        does_index_exist = True
-                        break
-
-                if does_index_exist is False:
-                    self.actions.append(Action(index, data[1]))
-            else:
-                index = int(data[0])
-
+            index = self.addActionToActionsList(data[0], data[1])
             start_datetime = datetime.datetime.strptime(data[2], "%Y-%m-%d %H:%M:%S")
             end_datetime = datetime.datetime.strptime(data[3], "%Y-%m-%d %H:%M:%S")
 
@@ -67,7 +72,7 @@ class LabelsReader(Reader):
     # N0xx_YYYYMMDD
     # xx - nurse_id
     # YYYYMMDD - date
-    def _splitFileNameByPattern(self, path):
+    def splitFileNameByPattern(self, path):
         file_name_with_ext = os.path.basename(path)
         file_name = os.path.splitext(file_name_with_ext)[0]
         nurse_id_and_date = file_name.split('_')
